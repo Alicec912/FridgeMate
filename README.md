@@ -11,6 +11,7 @@ A mobile-first fridge food tracker MVP.
 - Mobile-first responsive design
 - Bottom navigation like a mobile app
 - Local browser storage for MVP data
+- JSON backup and restore
 - PWA manifest included
 
 ## Run locally

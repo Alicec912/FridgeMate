@@ -36,6 +36,29 @@ export function removeFoodItem(id: string) {
   saveFoodItems(loadFoodItems().filter((item) => item.id !== id));
 }
 
+export function exportFridgeData() {
+  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), items: loadFoodItems() }, null, 2);
+}
+
+export function importFridgeData(raw: string) {
+  const parsed: unknown = JSON.parse(raw);
+  const items = Array.isArray(parsed)
+    ? parsed
+    : typeof parsed === "object" && parsed !== null && "items" in parsed
+      ? (parsed as { items: unknown }).items
+      : null;
+  if (!Array.isArray(items)) throw new Error("Invalid FridgeMate backup");
+  const valid = items.every((item) =>
+    typeof item === "object" && item !== null &&
+    typeof (item as FoodItem).id === "string" &&
+    typeof (item as FoodItem).name === "string" &&
+    typeof (item as FoodItem).createdAt === "string"
+  );
+  if (!valid) throw new Error("Backup contains invalid food items");
+  saveFoodItems(items as FoodItem[]);
+  return items.length;
+}
+
 export function loadLanguage(): Language {
   if (typeof window === "undefined") return "en";
   const value = window.localStorage.getItem(LANGUAGE_KEY);
