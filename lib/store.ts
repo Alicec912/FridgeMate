@@ -5,11 +5,31 @@ import { FoodItem, Language } from "./types";
 const FOOD_KEY = "fridgemate.foodItems";
 const LANGUAGE_KEY = "fridgemate.language";
 
+function isFoodItem(value: unknown): value is FoodItem {
+  if (typeof value !== "object" || value === null) return false;
+
+  const item = value as Partial<FoodItem>;
+  return (
+    typeof item.id === "string" &&
+    typeof item.name === "string" &&
+    typeof item.category === "string" &&
+    ["fridge", "freezer", "pantry"].includes(item.storageLocation ?? "") &&
+    typeof item.createdAt === "string" &&
+    typeof item.updatedAt === "string"
+  );
+}
+
+function isFoodItemList(value: unknown): value is FoodItem[] {
+  return Array.isArray(value) && value.every(isFoodItem);
+}
+
 export function loadFoodItems(): FoodItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(FOOD_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return isFoodItemList(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -47,15 +67,8 @@ export function importFridgeData(raw: string) {
     : typeof parsed === "object" && parsed !== null && "items" in parsed
       ? (parsed as { items: unknown }).items
       : null;
-  if (!Array.isArray(items)) throw new Error("Invalid FridgeMate backup");
-  const valid = items.every((item) =>
-    typeof item === "object" && item !== null &&
-    typeof (item as FoodItem).id === "string" &&
-    typeof (item as FoodItem).name === "string" &&
-    typeof (item as FoodItem).createdAt === "string"
-  );
-  if (!valid) throw new Error("Backup contains invalid food items");
-  saveFoodItems(items as FoodItem[]);
+  if (!isFoodItemList(items)) throw new Error("Backup contains invalid food items");
+  saveFoodItems(items);
   return items.length;
 }
 
