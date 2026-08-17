@@ -23,7 +23,7 @@ test("shows an expired item in alerts and lets the user remove it", async ({ pag
   await page.getByLabel("Use by").fill("2020-01-01");
   await page.getByRole("button", { name: "Save item" }).click();
 
-  await expect(page.getByText(/days overdue/)).toBeVisible();
+  await expect(page.getByText(/days overdue/).first()).toBeVisible();
   await page.getByRole("link", { name: "Alerts" }).click();
   await expect(page.getByRole("heading", { name: "Old yoghurt" })).toBeVisible();
 
