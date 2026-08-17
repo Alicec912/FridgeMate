@@ -23,6 +23,15 @@ npm run dev
 
 Open http://localhost:3000
 
+## Run automated tests
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+The Playwright tests start the production app automatically and use isolated browser storage.
+
 ## Deploy to Vercel
 
 1. Push this folder to a GitHub repository.
